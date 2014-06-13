@@ -2,6 +2,7 @@
 
 var archiveType = require('archive-type');
 var path = require('path');
+var rm = require('rimraf');
 var tempWrite = require('temp-write');
 var Zip = require('adm-zip');
 
@@ -46,7 +47,14 @@ module.exports = function (opts) {
             });
 
             decompress.files = files;
-            cb();
+
+            rm(filepath, function (err) {
+                if (err) {
+                    return cb(err);
+                }
+
+                cb();
+            });
         });
     };
 };

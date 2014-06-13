@@ -26,6 +26,7 @@
   "dependencies": {
     "adm-zip": "^0.4.4",
     "archive-type": "^0.1.2",
+    "rimraf": "^2.2.8",
     "temp-write": "^0.3.1"
   },
   "devDependencies": {
