@@ -29,10 +29,10 @@
     "is-zip": "^0.1.0",
     "rimraf": "^2.2.8",
     "strip-dirs": "^0.1.0",
-    "temp-write": "^0.3.1"
+    "temp-write": "^1.0.0"
   },
   "devDependencies": {
-    "decompress": "^0.3.0",
+    "decompress": "^1.0.1",
     "mocha": "^1.18.2"
   }
 }
