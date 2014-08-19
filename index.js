@@ -21,7 +21,8 @@ module.exports = function (opts) {
         var files = [];
 
         if (!isZip(file.contents)) {
-            return cb();
+            cb();
+            return;
         }
 
         tempWrite(file.contents, function (err, filepath) {
@@ -38,7 +39,8 @@ module.exports = function (opts) {
 
             rm(filepath, function (err) {
                 if (err) {
-                    return cb(err);
+                    cb(err);
+                    return;
                 }
 
                 cb();

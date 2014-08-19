@@ -12,32 +12,30 @@ describe('zip()', function () {
     afterEach(function (cb) {
         rimraf(path.join(__dirname, 'tmp'), cb);
     });
-  
-    it('should decompress a ZIP file', function (cb) {
-        var decompress = new Decompress();
 
-        decompress
+    it('should decompress a ZIP file', function (cb) {
+        var decompress = new Decompress()
             .src(path.join(__dirname, 'fixtures/test.zip'))
             .dest(path.join(__dirname, 'tmp'))
-            .use(zip())
-            .decompress(function (err) {
-                assert(!err);
-                assert(fs.existsSync(path.join(__dirname, 'tmp/test.jpg')));
-                cb();
-            });
-    });
-    
-    it('should strip path level using the `strip` option', function (cb) {
-        var decompress = new Decompress();
+            .use(zip());
 
-        decompress
+        decompress.decompress(function (err) {
+            assert(!err);
+            assert(fs.existsSync(path.join(__dirname, 'tmp/test.jpg')));
+            cb();
+        });
+    });
+
+    it('should strip path level using the `strip` option', function (cb) {
+        var decompress = new Decompress()
             .src(path.join(__dirname, 'fixtures/test-nested.zip'))
             .dest(path.join(__dirname, 'tmp'))
-            .use(zip({ strip: 1 }))
-            .decompress(function (err) {
-                assert(!err);
-                assert(fs.existsSync(path.join(__dirname, 'tmp/test/test.jpg')));
-                cb();
-            });
+            .use(zip({ strip: 1 }));
+
+        decompress.decompress(function (err) {
+            assert(!err);
+            assert(fs.existsSync(path.join(__dirname, 'tmp/test/test.jpg')));
+            cb();
+        });
     });
 });
