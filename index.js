@@ -1,8 +1,8 @@
 'use strict';
 
-var archiveType = require('archive-type');
-var path = require('path');
+var isZip = require('is-zip');
 var rm = require('rimraf');
+var stripDirs = require('strip-dirs');
 var tempWrite = require('temp-write');
 var Zip = require('adm-zip');
 
@@ -20,7 +20,7 @@ module.exports = function (opts) {
     return function (file, decompress, cb) {
         var files = [];
 
-        if (archiveType(file.contents) !== 'zip') {
+        if (!isZip(file.contents)) {
             return cb();
         }
 
@@ -30,19 +30,7 @@ module.exports = function (opts) {
             zip.getEntries().forEach(function (file) {
                 if (!file.isDirectory) {
                     file.path = file.entryName.toString();
-
-                    if (opts.strip) {
-                        var f = path.basename(file.path);
-                        var p = path.dirname(file.path.split('/'));
-
-                        if (Array.isArray(p)) {
-                            p = p.slice(opts.strip).join(path.sep);
-                        }
-
-                        file.path = path.join(p, f);
-                    }
-
-                    files.push({ contents: file.getData(), path: file.path });
+                    files.push({ contents: file.getData(), path: stripDirs(file.path, opts.strip) });
                 }
             });
 
