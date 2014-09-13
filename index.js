@@ -1,9 +1,11 @@
 'use strict';
 
+var File = require('vinyl');
 var isZip = require('is-zip');
 var rm = require('rimraf');
 var stripDirs = require('strip-dirs');
 var tempWrite = require('temp-write');
+var through = require('through2');
 var Zip = require('adm-zip');
 
 /**
@@ -17,11 +19,21 @@ module.exports = function (opts) {
     opts = opts || {};
     opts.strip = +opts.strip || 0;
 
-    return function (file, decompress, cb) {
-        var files = [];
+    return through.obj(function (file, enc, cb) {
+        var self = this;
+
+        if (file.isNull()) {
+            cb(null, file);
+            return;
+        }
+
+        if (file.isStream()) {
+            cb(new Error('Streaming is not supported'));
+            return;
+        }
 
         if (!isZip(file.contents)) {
-            cb();
+            cb(null, file);
             return;
         }
 
@@ -30,12 +42,12 @@ module.exports = function (opts) {
 
             zip.getEntries().forEach(function (file) {
                 if (!file.isDirectory) {
-                    file.path = file.entryName.toString();
-                    files.push({ contents: file.getData(), path: stripDirs(file.path, opts.strip) });
+                    self.push(new File({
+                        contents: file.getData(),
+                        path: stripDirs(file.entryName.toString(), opts.strip)
+                    }));
                 }
             });
-
-            decompress.files = files;
 
             rm(filepath, function (err) {
                 if (err) {
@@ -46,5 +58,5 @@ module.exports = function (opts) {
                 cb();
             });
         });
-    };
+    });
 };

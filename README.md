@@ -16,10 +16,29 @@ var zip = require('decompress-unzip');
 
 var decompress = new Decompress()
     .src('foo.zip')
-    .dest('destFolder')
+    .dest('dest')
     .use(zip({ strip: 1 }));
 
-decompress.decompress();
+decompress.run(function (err, files) {
+    if (err) {
+        throw err;
+    }
+
+    console.log('Files extracted successfully!'); 
+});
+```
+
+You can also use this plugin with [gulp](http://gulpjs.com):
+
+```js
+var gulp = require('gulp');
+var zip = require('decompress-unzip');
+
+gulp.task('default', function () {
+    return gulp.src('foo.zip')
+        .pipe(zip({ strip: 1 }))
+        .pipe(gulp.dest('dest'));
+});
 ```
 
 ## Options

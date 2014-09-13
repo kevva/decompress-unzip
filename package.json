@@ -29,10 +29,12 @@
     "is-zip": "^1.0.0",
     "rimraf": "^2.2.8",
     "strip-dirs": "^0.1.1",
-    "temp-write": "^1.0.0"
+    "temp-write": "^1.0.0",
+    "through2": "^0.6.1",
+    "vinyl": "^0.4.3"
   },
   "devDependencies": {
     "ava": "0.0.4",
-    "decompress": "^1.0.1"
+    "is-jpg": "^1.0.0"
   }
 }
