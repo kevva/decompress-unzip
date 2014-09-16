@@ -1,4 +1,4 @@
-# decompress-unzip [![Build Status](http://img.shields.io/travis/kevva/decompress-zip.svg?style=flat)](https://travis-ci.org/kevva/decompress-unzip)
+# decompress-unzip [![Build Status](http://img.shields.io/travis/kevva/decompress-unzip.svg?style=flat)](https://travis-ci.org/kevva/decompress-unzip)
 
 > zip decompress plugin
 
