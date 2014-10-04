@@ -15,16 +15,16 @@ var Decompress = require('decompress');
 var zip = require('decompress-unzip');
 
 var decompress = new Decompress()
-    .src('foo.zip')
-    .dest('dest')
-    .use(zip({ strip: 1 }));
+	.src('foo.zip')
+	.dest('dest')
+	.use(zip({ strip: 1 }));
 
 decompress.run(function (err, files) {
-    if (err) {
-        throw err;
-    }
+	if (err) {
+		throw err;
+	}
 
-    console.log('Files extracted successfully!'); 
+	console.log('Files extracted successfully!'); 
 });
 ```
 
@@ -35,9 +35,9 @@ var gulp = require('gulp');
 var zip = require('decompress-unzip');
 
 gulp.task('default', function () {
-    return gulp.src('foo.zip')
-        .pipe(zip({ strip: 1 }))
-        .pipe(gulp.dest('dest'));
+	return gulp.src('foo.zip')
+		.pipe(zip({ strip: 1 }))
+		.pipe(gulp.dest('dest'));
 });
 ```
 
