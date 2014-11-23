@@ -49,14 +49,7 @@ module.exports = function (opts) {
 				}
 			});
 
-			rm(filepath, function (err) {
-				if (err) {
-					cb(err);
-					return;
-				}
-
-				cb();
-			});
+			rm(filepath, cb);
 		});
 	});
 };
