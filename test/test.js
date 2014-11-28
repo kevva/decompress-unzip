@@ -10,7 +10,7 @@ test('decompress a ZIP file', function (t) {
 	t.plan(2);
 
 	read(path.join(__dirname, 'fixtures/test.zip'), function (err, file) {
-		t.assert(!err);
+		t.assert(!err, err);
 
 		var stream = zip();
 
@@ -26,7 +26,7 @@ test('strip path level using the `strip` option', function (t) {
 	t.plan(3);
 
 	read(path.join(__dirname, 'fixtures/test-nested.zip'), function (err, file) {
-		t.assert(!err);
+		t.assert(!err, err);
 
 		var stream = zip({ strip: 1 });
 
