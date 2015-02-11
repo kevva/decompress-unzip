@@ -8,13 +8,6 @@ var tempWrite = require('temp-write');
 var through = require('through2');
 var Zip = require('adm-zip');
 
-/**
- * zip decompress plugin
- *
- * @param {Object} opts
- * @api public
- */
-
 module.exports = function (opts) {
 	opts = opts || {};
 	opts.strip = +opts.strip || 0;

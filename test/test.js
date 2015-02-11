@@ -28,7 +28,7 @@ test('strip path level using the `strip` option', function (t) {
 	read(path.join(__dirname, 'fixtures/test-nested.zip'), function (err, file) {
 		t.assert(!err, err);
 
-		var stream = zip({ strip: 1 });
+		var stream = zip({strip: 1});
 
 		stream.on('data', function (file) {
 			t.assert(file.path === 'test.jpg');

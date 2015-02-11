@@ -17,7 +17,7 @@ var zip = require('decompress-unzip');
 var decompress = new Decompress()
 	.src('foo.zip')
 	.dest('dest')
-	.use(zip({ strip: 1 }));
+	.use(zip({strip: 1}));
 
 decompress.run(function (err, files) {
 	if (err) {
@@ -36,7 +36,7 @@ var zip = require('decompress-unzip');
 
 gulp.task('default', function () {
 	return gulp.src('foo.zip')
-		.pipe(zip({ strip: 1 }))
+		.pipe(zip({strip: 1}))
 		.pipe(gulp.dest('dest'));
 });
 ```
