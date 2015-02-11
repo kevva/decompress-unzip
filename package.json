@@ -26,13 +26,12 @@
     "zip"
   ],
   "dependencies": {
-    "adm-zip": "^0.4.4",
+    "bufferstreams": "^1.0.1",
     "is-zip": "^1.0.0",
-    "rimraf": "^2.2.8",
     "strip-dirs": "^1.0.0",
-    "temp-write": "^1.0.0",
     "through2": "^0.6.1",
-    "vinyl": "^0.4.3"
+    "vinyl": "^0.4.3",
+    "yauzl": "^2.2.1"
   },
   "devDependencies": {
     "ava": "0.0.4",
