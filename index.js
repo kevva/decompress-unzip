@@ -1,12 +1,11 @@
 'use strict';
 
+var BufferStreams = require('bufferstreams');
 var File = require('vinyl');
 var isZip = require('is-zip');
-var rm = require('rimraf');
 var stripDirs = require('strip-dirs');
-var tempWrite = require('temp-write');
 var through = require('through2');
-var Zip = require('adm-zip');
+var yauzl = require('yauzl');
 
 module.exports = function (opts) {
 	opts = opts || {};
@@ -30,19 +29,49 @@ module.exports = function (opts) {
 			return;
 		}
 
-		tempWrite(file.contents, function (err, filepath) {
-			var zip = new Zip(filepath);
+		yauzl.fromBuffer(file.contents, function (err, zipFile) {
+			if (err) {
+				cb(err);
+				return;
+			}
 
-			zip.getEntries().forEach(function (file) {
-				if (!file.isDirectory) {
-					self.push(new File({
-						contents: file.getData(),
-						path: stripDirs(file.entryName.toString(), opts.strip)
-					}));
-				}
+			var count = 0;
+
+			zipFile
+				.on('error', cb)
+				.on('entry', function (entry) {
+					count++;
+
+					if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
+						if (count === zipFile.entryCount) {
+							cb();
+						}
+
+						return;
+					}
+
+					zipFile.openReadStream(entry, function (err, readStream) {
+						if (err) {
+							cb(err);
+							return;
+						}
+
+						readStream
+							.on('error', cb)
+							.pipe(new BufferStreams(function (err, buf, done) {
+								self.push(new File({
+									contents: buf,
+									path: stripDirs(entry.fileName, opts.strip)
+								}));
+
+								if (count === zipFile.entryCount) {
+									cb();
+								}
+
+								done();
+							}));
+					});
 			});
-
-			rm(filepath, cb);
 		});
 	});
 };
