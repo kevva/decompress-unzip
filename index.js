@@ -12,6 +12,7 @@ module.exports = function (opts) {
 	opts.strip = +opts.strip || 0;
 
 	return through.obj(function (file, enc, cb) {
+		var count = 0;
 		var self = this;
 
 		if (file.isNull()) {
@@ -34,8 +35,6 @@ module.exports = function (opts) {
 				cb(err);
 				return;
 			}
-
-			var count = 0;
 
 			zipFile
 				.on('error', cb)
