@@ -26,7 +26,6 @@
     "zip"
   ],
   "dependencies": {
-    "bufferstreams": "^1.0.1",
     "is-zip": "^1.0.0",
     "strip-dirs": "^1.0.0",
     "through2": "^0.6.1",
@@ -36,6 +35,7 @@
   "devDependencies": {
     "ava": "0.0.4",
     "buffer-equal": "0.0.1",
+    "got": "^2.4.0",
     "is-jpg": "^1.0.0",
     "vinyl-file": "^1.1.0"
   }

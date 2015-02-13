@@ -2,6 +2,7 @@
 
 var bufferEqual = require('buffer-equal');
 var File = require('vinyl');
+var got = require('got');
 var isJpg = require('is-jpg');
 var path = require('path');
 var read = require('vinyl-file').read;
@@ -47,13 +48,55 @@ test('decompress a ZIP file with multiple files', function (t) {
 	});
 });
 
+test('decompress a large ZIP file', function (t) {
+	t.plan(3);
+
+	var url = 'https://github.com/facebook/flow/releases/download/v0.2.0/flow-linux64-v0.2.0.zip';
+
+	got(url, {encoding: null}, function(err, data) {
+		t.assert(!err, err);
+
+		var files = [];
+		var stream = zip({ strip: 1 });
+
+		stream.on('data', function (file) {
+			files.push(file.path);
+		});
+
+		stream.on('finish', function () {
+			t.assert(files.length === 44, files.length);
+			t.assert(files[43] === 'flow', files[43]);
+		});
+
+		stream.end(new File({ contents: data }));
+	});
+});
+
+test('decompress a ZIP file including symlink', function (t) {
+	t.plan(4);
+
+	read(path.join(__dirname, 'fixtures/test-symlink.zip'), function (err, file) {
+		t.assert(!err, err);
+
+		var stream = zip();
+
+		stream.on('data', function (file) {
+			t.assert(file.path === 'ReactiveCocoa', file.path);
+			t.assert(file.stat, 'Not stats');
+			t.assert(file.stat.isSymbolicLink(), 'Not a symbolic link');
+		});
+
+		stream.end(file);
+	});
+});
+
 test('strip path level using the `strip` option', function (t) {
 	t.plan(3);
 
 	read(path.join(__dirname, 'fixtures/test-nested.zip'), function (err, file) {
 		t.assert(!err, err);
 
-		var stream = zip({strip: 1});
+		var stream = zip({ strip: 1 });
 
 		stream.on('data', function (file) {
 			t.assert(file.path === 'test.jpg', file.path);

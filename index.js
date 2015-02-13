@@ -1,7 +1,7 @@
 'use strict';
 
-var BufferStreams = require('bufferstreams');
 var File = require('vinyl');
+var fs = require('fs');
 var isZip = require('is-zip');
 var stripDirs = require('strip-dirs');
 var through = require('through2');
@@ -12,7 +12,6 @@ module.exports = function (opts) {
 	opts.strip = +opts.strip || 0;
 
 	return through.obj(function (file, enc, cb) {
-		var count = 0;
 		var self = this;
 
 		if (file.isNull()) {
@@ -31,6 +30,8 @@ module.exports = function (opts) {
 		}
 
 		yauzl.fromBuffer(file.contents, function (err, zipFile) {
+			var count = 0;
+
 			if (err) {
 				cb(err);
 				return;
@@ -39,10 +40,8 @@ module.exports = function (opts) {
 			zipFile
 				.on('error', cb)
 				.on('entry', function (entry) {
-					count++;
-
 					if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
-						if (count === zipFile.entryCount) {
+						if (++count === zipFile.entryCount) {
 							cb();
 						}
 
@@ -55,20 +54,31 @@ module.exports = function (opts) {
 							return;
 						}
 
+						var chunks = [];
+						var len = 0;
+
 						readStream
 							.on('error', cb)
-							.pipe(new BufferStreams(function (err, buf, done) {
+							.on('data', function (data) {
+								chunks.push(data);
+								len += data.length;
+							})
+							.on('end', function () {
+								var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
+
+								var stat = new fs.Stats();
+								stat.mode = mode;
+
 								self.push(new File({
-									contents: buf,
+									stat: stat,
+									contents: Buffer.concat(chunks, len),
 									path: stripDirs(entry.fileName, opts.strip)
 								}));
 
-								if (count === zipFile.entryCount) {
+								if (++count === zipFile.entryCount) {
 									cb();
 								}
-
-								done();
-							}));
+							});
 					});
 			});
 		});
