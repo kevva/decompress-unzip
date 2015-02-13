@@ -53,11 +53,11 @@ test('decompress a large ZIP file', function (t) {
 
 	var url = 'https://github.com/facebook/flow/releases/download/v0.2.0/flow-linux64-v0.2.0.zip';
 
-	got(url, {encoding: null}, function(err, data) {
+	got(url, {encoding: null}, function (err, data) {
 		t.assert(!err, err);
 
 		var files = [];
-		var stream = zip({ strip: 1 });
+		var stream = zip({strip: 1});
 
 		stream.on('data', function (file) {
 			files.push(file.path);
@@ -68,7 +68,7 @@ test('decompress a large ZIP file', function (t) {
 			t.assert(files[43] === 'flow', files[43]);
 		});
 
-		stream.end(new File({ contents: data }));
+		stream.end(new File({contents: data}));
 	});
 });
 
@@ -96,7 +96,7 @@ test('strip path level using the `strip` option', function (t) {
 	read(path.join(__dirname, 'fixtures/test-nested.zip'), function (err, file) {
 		t.assert(!err, err);
 
-		var stream = zip({ strip: 1 });
+		var stream = zip({strip: 1});
 
 		stream.on('data', function (file) {
 			t.assert(file.path === 'test.jpg', file.path);
