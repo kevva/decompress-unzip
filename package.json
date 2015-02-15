@@ -1,6 +1,6 @@
 {
   "name": "decompress-unzip",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "decompress zip plugin",
   "license": "MIT",
   "repository": "kevva/decompress-unzip",
