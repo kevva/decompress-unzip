@@ -64,10 +64,15 @@ module.exports = function (opts) {
 								len += data.length;
 							})
 							.on('end', function () {
+								var stat;
 								var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
-								var stat = new fs.Stats();
 
-								stat.mode = mode;
+								if (mode) {
+									stat = new fs.Stats();
+									stat.mode = mode;
+								} else {
+									stat = null;
+								}
 
 								self.push(new File({
 									stat: stat,
