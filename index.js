@@ -24,7 +24,7 @@ module.exports = function (opts) {
 			return;
 		}
 
-		if (!isZip(file.contents)) {
+		if (!file.extract || !isZip(file.contents)) {
 			cb(null, file);
 			return;
 		}

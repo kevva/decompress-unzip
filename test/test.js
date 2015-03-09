@@ -5,47 +5,44 @@ var File = require('vinyl');
 var got = require('got');
 var isJpg = require('is-jpg');
 var path = require('path');
-var read = require('vinyl-file').read;
 var test = require('ava');
 var zip = require('../');
+var vinylFile = require('vinyl-file');
 
 test('decompress a ZIP file', function (t) {
-	t.plan(3);
+	t.plan(1);
 
-	read(path.join(__dirname, 'fixtures/test.zip'), function (err, file) {
-		t.assert(!err, err);
+	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test.zip'));
+	var stream = zip();
 
-		var stream = zip();
+	file.extract = true;
 
-		stream.on('data', function (file) {
-			t.assert(file.path === 'test.jpg', file.path);
-			t.assert(isJpg(file.contents));
-		});
-
-		stream.end(file);
+	stream.on('data', function (file) {
+		t.assert(isJpg(file.contents));
 	});
+
+	stream.end(file);
 });
 
 test('decompress a ZIP file with multiple files', function (t) {
-	t.plan(6);
+	t.plan(5);
 
-	read(path.join(__dirname, 'fixtures/test-multiple.zip'), function (err, file) {
-		t.assert(!err, err);
+	var count = 0;
+	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-multiple.zip'));
+	var stream = zip();
 
-		var count = 0;
-		var stream = zip();
+	file.extract = true;
 
-		stream.on('data', function (file) {
-			t.assert(file.path === count++ + '.txt', file.path);
-			t.assert(String(file.contents) === String(count));
-		});
-
-		stream.on('finish', function () {
-			t.assert(count === 2, count);
-		});
-
-		stream.end(file);
+	stream.on('data', function (file) {
+		t.assert(file.path === count++ + '.txt');
+		t.assert(String(file.contents) === String(count));
 	});
+
+	stream.on('end', function () {
+		t.assert(count === 2, count);
+	});
+
+	stream.end(file);
 });
 
 test('decompress a large ZIP file', function (t) {
@@ -56,72 +53,72 @@ test('decompress a large ZIP file', function (t) {
 	got(url, {encoding: null}, function (err, data) {
 		t.assert(!err, err);
 
+		var file = new File({contents: data});
 		var files = [];
 		var stream = zip({strip: 1});
+
+		file.extract = true;
 
 		stream.on('data', function (file) {
 			files.push(file.path);
 		});
 
-		stream.on('finish', function () {
-			t.assert(files.length === 44, files.length);
-			t.assert(files[43] === 'flow', files[43]);
+		stream.on('end', function () {
+			t.assert(files.length === 44);
+			t.assert(files[43] === 'flow');
 		});
 
-		stream.end(new File({contents: data}));
+		stream.end(file);
 	});
 });
 
 test('decompress a ZIP file including symlink', function (t) {
 	t.plan(4);
 
-	read(path.join(__dirname, 'fixtures/test-symlink.zip'), function (err, file) {
-		t.assert(!err, err);
+	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-symlink.zip'));
+	var stream = zip();
 
-		var stream = zip();
+	file.extract = true;
 
-		stream.on('data', function (file) {
-			t.assert(file.path === 'ReactiveCocoa', file.path);
-			t.assert(file.stat, 'Not stats');
-			t.assert(file.stat.isSymbolicLink(), 'Not a symbolic link');
-		});
-
-		stream.end(file);
+	stream.on('data', function (file) {
+		t.assert(file.path === 'ReactiveCocoa', file.path);
+		t.assert(file.stat, 'Not stats');
+		t.assert(file.stat.isSymbolicLink(), 'Not a symbolic link');
 	});
+
+	stream.end(file);
 });
 
 test('strip path level using the `strip` option', function (t) {
-	t.plan(3);
+	t.plan(2);
 
-	read(path.join(__dirname, 'fixtures/test-nested.zip'), function (err, file) {
-		t.assert(!err, err);
+	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-nested.zip'));
+	var stream = zip({strip: 1});
 
-		var stream = zip({strip: 1});
+	file.extract = true;
 
-		stream.on('data', function (file) {
-			t.assert(file.path === 'test.jpg', file.path);
-			t.assert(isJpg(file.contents));
-		});
-
-		stream.end(file);
+	stream.on('data', function (file) {
+		t.assert(file.path === 'test.jpg');
+		t.assert(isJpg(file.contents));
 	});
+
+	stream.end(file);
 });
 
 test('skip decompressing a non-ZIP file', function (t) {
-	t.plan(2);
+	t.plan(1);
 
-	read(__filename, function (err, file) {
-		t.assert(!err, err);
+	var file = vinylFile.readSync(__filename);
+	var stream = zip();
+	var contents = file.contents;
 
-		var stream = zip();
-		var contents = file.contents;
+	file.extract = true;
 
-		stream.on('data', function (data) {
-			t.assert(bufferEqual(data.contents, contents));
-		});
-
-		stream.end(file);
+	stream.on('data', function (file) {
+		t.assert(bufferEqual(file.contents, contents));
 	});
+
+	stream.end(file);
 });
 
 test('skip decompressing an empty file', function (t) {
@@ -137,21 +134,18 @@ test('skip decompressing an empty file', function (t) {
 });
 
 test('emit an error when a ZIP file is corrupt', function (t) {
-	t.plan(3);
+	t.plan(2);
 
-	read(path.join(__dirname, 'fixtures/test.zip'), function (err, file) {
-		t.assert(!err, err);
+	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test.zip'));
+	var stream = zip();
 
-		// break the ZIP data
-		file.contents[98] = 0;
+	file.contents[98] = 0;
+	file.extract = true;
 
-		var stream = zip();
-
-		stream.on('error', function (err) {
-			t.assert(err);
-			t.assert(err.message === 'invalid literal/lengths set', err.message);
-		});
-
-		stream.end(file);
+	stream.on('error', function (err) {
+		t.assert(err);
+		t.assert(err.message === 'invalid literal/lengths set');
 	});
+
+	stream.end(file);
 });
