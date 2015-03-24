@@ -37,54 +37,54 @@ module.exports = function (opts) {
 				return;
 			}
 
-			zipFile
-				.on('error', cb)
-				.on('entry', function (entry) {
-					if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
-						if (++count === zipFile.entryCount) {
-							cb();
-						}
+			zipFile.on('error', cb);
+			zipFile.on('entry', function (entry) {
+				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
+					if (++count === zipFile.entryCount) {
+						cb();
+					}
 
+					return;
+				}
+
+				zipFile.openReadStream(entry, function (err, readStream) {
+					if (err) {
+						cb(err);
 						return;
 					}
 
-					zipFile.openReadStream(entry, function (err, readStream) {
-						if (err) {
-							cb(err);
-							return;
+					var chunks = [];
+					var len = 0;
+
+					readStream.on('error', cb);
+					readStream.on('data', function (data) {
+						chunks.push(data);
+						len += data.length;
+					});
+
+					readStream.on('end', function () {
+						var stat = new fs.Stats();
+						var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
+
+						if (mode) {
+							stat.mode = mode;
 						}
 
-						var chunks = [];
-						var len = 0;
+						if (entry.getLastModDate()) {
+							stat.mtime = entry.getLastModDate();
+						}
 
-						readStream
-							.on('error', cb)
-							.on('data', function (data) {
-								chunks.push(data);
-								len += data.length;
-							})
-							.on('end', function () {
-								var stat;
-								var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
+						self.push(new File({
+							contents: Buffer.concat(chunks, len),
+							path: stripDirs(entry.fileName, opts.strip),
+							stat: stat
+						}));
 
-								if (mode) {
-									stat = new fs.Stats();
-									stat.mode = mode;
-								} else {
-									stat = null;
-								}
-
-								self.push(new File({
-									stat: stat,
-									contents: Buffer.concat(chunks, len),
-									path: stripDirs(entry.fileName, opts.strip)
-								}));
-
-								if (++count === zipFile.entryCount) {
-									cb();
-								}
-							});
+						if (++count === zipFile.entryCount) {
+							cb();
+						}
 					});
+				});
 			});
 		});
 	});
