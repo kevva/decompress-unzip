@@ -10,7 +10,7 @@ var zip = require('../');
 var vinylFile = require('vinyl-file');
 
 test('decompress a ZIP file', function (t) {
-	t.plan(1);
+	t.plan(2);
 
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test.zip'));
 	var stream = zip();
@@ -18,6 +18,7 @@ test('decompress a ZIP file', function (t) {
 	file.extract = true;
 
 	stream.on('data', function (file) {
+		t.assert(!file.stat.isDirectory());
 		t.assert(isJpg(file.contents));
 	});
 
@@ -25,7 +26,7 @@ test('decompress a ZIP file', function (t) {
 });
 
 test('decompress a ZIP file with multiple files', function (t) {
-	t.plan(5);
+	t.plan(7);
 
 	var count = 0;
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-multiple.zip'));
@@ -34,6 +35,7 @@ test('decompress a ZIP file with multiple files', function (t) {
 	file.extract = true;
 
 	stream.on('data', function (file) {
+		t.assert(!file.stat.isDirectory());
 		t.assert(file.path === count++ + '.txt');
 		t.assert(String(file.contents) === String(count));
 	});
@@ -90,7 +92,7 @@ test('decompress a ZIP file including symlink', function (t) {
 });
 
 test('strip path level using the `strip` option', function (t) {
-	t.plan(2);
+	t.plan(3);
 
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-nested.zip'));
 	var stream = zip({strip: 1});
@@ -98,6 +100,7 @@ test('strip path level using the `strip` option', function (t) {
 	file.extract = true;
 
 	stream.on('data', function (file) {
+		t.assert(!file.stat.isDirectory());
 		t.assert(file.path === 'test.jpg');
 		t.assert(isJpg(file.contents));
 	});
