@@ -39,7 +39,33 @@ module.exports = function (opts) {
 
 			zipFile.on('error', cb);
 			zipFile.on('entry', function (entry) {
-				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
+				var filePath = stripDirs(entry.fileName, opts.strip);
+				
+				if (filePath === '.') {
+					if (++count === zipFile.entryCount) {
+						cb();
+					}
+
+					return;
+				}
+
+				var stat = new fs.Stats();
+				var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
+
+				if (mode) {
+					stat.mode = mode;
+				}
+
+				if (entry.getLastModDate()) {
+					stat.mtime = entry.getLastModDate();
+				}
+
+				if (stat.isDirectory()) {
+					self.push(new File({
+						path: filePath,
+						stat: stat
+					}));
+
 					if (++count === zipFile.entryCount) {
 						cb();
 					}
@@ -63,20 +89,9 @@ module.exports = function (opts) {
 					});
 
 					readStream.on('end', function () {
-						var stat = new fs.Stats();
-						var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
-
-						if (mode) {
-							stat.mode = mode;
-						}
-
-						if (entry.getLastModDate()) {
-							stat.mtime = entry.getLastModDate();
-						}
-
 						self.push(new File({
 							contents: Buffer.concat(chunks, len),
-							path: stripDirs(entry.fileName, opts.strip),
+							path: filePath,
 							stat: stat
 						}));
 

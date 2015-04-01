@@ -25,7 +25,7 @@ test('decompress a ZIP file', function (t) {
 	stream.end(file);
 });
 
-test('decompress a ZIP file with multiple files', function (t) {
+test('decompress a ZIP file with multiple files and directories', function (t) {
 	t.plan(7);
 
 	var count = 0;
@@ -35,13 +35,27 @@ test('decompress a ZIP file with multiple files', function (t) {
 	file.extract = true;
 
 	stream.on('data', function (file) {
-		t.assert(!file.stat.isDirectory());
-		t.assert(file.path === count++ + '.txt');
-		t.assert(String(file.contents) === String(count));
+		if (count < 2) {
+			t.assert(file.path === count++ + '.txt', file.path);
+			t.assert(!file.stat.isDirectory());
+			t.assert(String(file.contents) === String(count), String(file.contents));
+			return;
+		}
+
+		if (count === 2) {
+			t.assert(file.path === String(count++), file.path);
+		} else {
+			t.assert(file.path === path.join('3', '4'), file.path);
+		}
+
+		t.assert(file.path === String(count++), file.path);
+		t.assert(file.isNull());
+		t.assert(file.stat.isDirectory());
+		return;
 	});
 
 	stream.on('end', function () {
-		t.assert(count === 2, count);
+		t.assert(count === 3, count);
 	});
 
 	stream.end(file);
@@ -66,8 +80,8 @@ test('decompress a large ZIP file', function (t) {
 		});
 
 		stream.on('end', function () {
-			t.assert(files.length === 44);
-			t.assert(files[43] === 'flow');
+			t.assert(files.length === 66, files.length);
+			t.assert(files[65] === 'flow', files[65]);
 		});
 
 		stream.end(file);
@@ -100,7 +114,7 @@ test('strip path level using the `strip` option', function (t) {
 	file.extract = true;
 
 	stream.on('data', function (file) {
-		t.assert(!file.stat.isDirectory());
+		t.assert(!file.stat.isDirectory(), file.path);
 		t.assert(file.path === 'test.jpg');
 		t.assert(isJpg(file.contents));
 	});
