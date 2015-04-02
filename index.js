@@ -64,6 +64,7 @@ module.exports = function (opts) {
 
 				if (stat.isDirectory() || entry.fileName.charAt(entry.fileName.length - 1) === '/') {
 					new Mode(stat).isDirectory(true);
+
 					self.push(new File({
 						path: filePath,
 						stat: stat
@@ -88,9 +89,10 @@ module.exports = function (opts) {
 							return;
 						}
 
-						if( ! stat.isSymbolicLink()) {
+						if (!stat.isSymbolicLink()) {
 							new Mode(stat).isFile(true);
 						}
+
 						self.push(new File({
 							contents: data,
 							path: filePath,
