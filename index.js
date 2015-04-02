@@ -40,7 +40,7 @@ module.exports = function (opts) {
 			zipFile.on('error', cb);
 			zipFile.on('entry', function (entry) {
 				var filePath = stripDirs(entry.fileName, opts.strip);
-				
+
 				if (filePath === '.') {
 					if (++count === zipFile.entryCount) {
 						cb();
@@ -60,7 +60,7 @@ module.exports = function (opts) {
 					stat.mtime = entry.getLastModDate();
 				}
 
-				if (stat.isDirectory()) {
+				if (stat.isDirectory() || entry.fileName.charAt(entry.fileName.length - 1) === '/') {
 					self.push(new File({
 						path: filePath,
 						stat: stat
