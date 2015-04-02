@@ -28,6 +28,7 @@
   "dependencies": {
     "is-zip": "^1.0.0",
     "read-all-stream": "^2.0.0",
+    "stat-mode": "^0.2.0",
     "strip-dirs": "^1.0.0",
     "through2": "^0.6.1",
     "vinyl": "^0.4.3",

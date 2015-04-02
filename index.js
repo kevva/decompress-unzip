@@ -7,6 +7,7 @@ var readAllStream = require('read-all-stream');
 var stripDirs = require('strip-dirs');
 var through = require('through2');
 var yauzl = require('yauzl');
+var Mode = require('stat-mode');
 
 module.exports = function (opts) {
 	opts = opts || {};
@@ -62,6 +63,7 @@ module.exports = function (opts) {
 				}
 
 				if (stat.isDirectory() || entry.fileName.charAt(entry.fileName.length - 1) === '/') {
+					new Mode(stat).isDirectory(true);
 					self.push(new File({
 						path: filePath,
 						stat: stat
@@ -86,6 +88,9 @@ module.exports = function (opts) {
 							return;
 						}
 
+						if( ! stat.isSymbolicLink()) {
+							new Mode(stat).isFile(true);
+						}
 						self.push(new File({
 							contents: data,
 							path: filePath,
