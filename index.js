@@ -7,6 +7,7 @@ var readAllStream = require('read-all-stream');
 var stripDirs = require('strip-dirs');
 var through = require('through2');
 var yauzl = require('yauzl');
+var Mode = require('stat-mode');
 
 module.exports = function (opts) {
 	opts = opts || {};
@@ -53,15 +54,17 @@ module.exports = function (opts) {
 				var stat = new fs.Stats();
 				var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
 
-				if (mode) {
-					stat.mode = mode;
-				}
+				stat.mode = mode;
 
 				if (entry.getLastModDate()) {
 					stat.mtime = entry.getLastModDate();
 				}
 
-				if (stat.isDirectory() || entry.fileName.charAt(entry.fileName.length - 1) === '/') {
+				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
+					if (!mode) {
+						new Mode(stat).isDirectory(true);
+					}
+
 					self.push(new File({
 						path: filePath,
 						stat: stat
@@ -84,6 +87,10 @@ module.exports = function (opts) {
 						if (err) {
 							cb(err);
 							return;
+						}
+
+						if (!mode) {
+							new Mode(stat).isFile(true);
 						}
 
 						self.push(new File({
