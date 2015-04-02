@@ -3,6 +3,7 @@
 var File = require('vinyl');
 var fs = require('fs');
 var isZip = require('is-zip');
+var readAllStream = require('read-all-stream');
 var stripDirs = require('strip-dirs');
 var through = require('through2');
 var yauzl = require('yauzl');
@@ -79,18 +80,14 @@ module.exports = function (opts) {
 						return;
 					}
 
-					var chunks = [];
-					var len = 0;
+					readAllStream(readStream, null, function (err, data) {
+						if (err) {
+							cb(err);
+							return;
+						}
 
-					readStream.on('error', cb);
-					readStream.on('data', function (data) {
-						chunks.push(data);
-						len += data.length;
-					});
-
-					readStream.on('end', function () {
 						self.push(new File({
-							contents: Buffer.concat(chunks, len),
+							contents: data,
 							path: filePath,
 							stat: stat
 						}));
