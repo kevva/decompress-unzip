@@ -62,8 +62,10 @@ module.exports = function (opts) {
 					stat.mtime = entry.getLastModDate();
 				}
 
-				if (stat.isDirectory() || entry.fileName.charAt(entry.fileName.length - 1) === '/') {
-					new Mode(stat).isDirectory(true);
+				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
+					if (!stat.mode) {
+						new Mode(stat).isDirectory(true);
+					}
 
 					self.push(new File({
 						path: filePath,
@@ -89,7 +91,7 @@ module.exports = function (opts) {
 							return;
 						}
 
-						if (!stat.isSymbolicLink()) {
+						if (!stat.mode) {
 							new Mode(stat).isFile(true);
 						}
 
