@@ -63,7 +63,7 @@ module.exports = function (opts) {
 				}
 
 				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
-					if (!stat.mode) {
+					if (!mode) {
 						new Mode(stat).isDirectory(true);
 					}
 
@@ -91,7 +91,7 @@ module.exports = function (opts) {
 							return;
 						}
 
-						if (!stat.mode) {
+						if (!mode) {
 							new Mode(stat).isFile(true);
 						}
 
