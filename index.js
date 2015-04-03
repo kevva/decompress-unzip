@@ -54,9 +54,7 @@ module.exports = function (opts) {
 				var stat = new fs.Stats();
 				var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
 
-				if (mode) {
-					stat.mode = mode;
-				}
+				stat.mode = mode;
 
 				if (entry.getLastModDate()) {
 					stat.mtime = entry.getLastModDate();
