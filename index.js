@@ -52,17 +52,15 @@ module.exports = function (opts) {
 				}
 
 				var stat = new fs.Stats();
-				var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
-
-				stat.mode = mode;
+				stat.mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
 
 				if (entry.getLastModDate()) {
 					stat.mtime = entry.getLastModDate();
 				}
 
 				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
-					if (!mode) {
-						new Mode(stat).isDirectory(true);
+					if (!stat.mode) {
+						setMode(stat).isDirectory(true);
 					}
 
 					self.push(new File({
@@ -89,8 +87,8 @@ module.exports = function (opts) {
 							return;
 						}
 
-						if (!mode) {
-							new Mode(stat).isFile(true);
+						if (!stat.mode) {
+							setMode(stat).isFile(true);
 						}
 
 						self.push(new File({
@@ -108,3 +106,17 @@ module.exports = function (opts) {
 		});
 	});
 };
+
+function setMode(stat) {
+	var mode = new Mode(stat);
+
+	mode.owner.read = true;
+	mode.owner.write = true;
+	mode.owner.execute = true;
+	mode.group.read = true;
+	mode.group.execute = true;
+	mode.others.read = true;
+	mode.others.execute = true;
+
+	return mode;
+}
