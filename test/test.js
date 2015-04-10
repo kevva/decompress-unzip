@@ -1,19 +1,19 @@
 'use strict';
 
+var path = require('path');
 var bufferEqual = require('buffer-equal');
-var File = require('vinyl');
 var got = require('got');
 var isJpg = require('is-jpg');
-var path = require('path');
 var test = require('ava');
-var zip = require('../');
+var Vinyl = require('vinyl');
 var vinylFile = require('vinyl-file');
+var decompressUnzip = require('../');
 
 test('decompress a ZIP file', function (t) {
 	t.plan(2);
 
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test.zip'));
-	var stream = zip();
+	var stream = decompressUnzip();
 
 	file.extract = true;
 
@@ -30,7 +30,7 @@ test('decompress a ZIP file with multiple files and directories', function (t) {
 
 	var count = 0;
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-multiple.zip'));
-	var stream = zip();
+	var stream = decompressUnzip();
 
 	file.extract = true;
 
@@ -69,9 +69,9 @@ test('decompress a large ZIP file', function (t) {
 	got(url, {encoding: null}, function (err, data) {
 		t.assert(!err, err);
 
-		var file = new File({contents: data});
+		var file = new Vinyl({contents: data});
 		var files = [];
-		var stream = zip({strip: 1});
+		var stream = decompressUnzip({strip: 1});
 
 		file.extract = true;
 
@@ -92,7 +92,7 @@ test('decompress a ZIP file including symlink', function (t) {
 	t.plan(4);
 
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-symlink.zip'));
-	var stream = zip();
+	var stream = decompressUnzip();
 
 	file.extract = true;
 
@@ -109,13 +109,13 @@ test('strip path level using the `strip` option', function (t) {
 	t.plan(3);
 
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test-nested.zip'));
-	var stream = zip({strip: 1});
+	var stream = decompressUnzip({strip: 1});
 
 	file.extract = true;
 
 	stream.on('data', function (file) {
-		t.assert(!file.stat.isDirectory(), file.path);
-		t.assert(file.path === 'test.jpg');
+		t.assert(!file.stat.isDirectory());
+		t.assert(file.path === 'test.jpg', file.path);
 		t.assert(isJpg(file.contents));
 	});
 
@@ -126,7 +126,7 @@ test('skip decompressing a non-ZIP file', function (t) {
 	t.plan(1);
 
 	var file = vinylFile.readSync(__filename);
-	var stream = zip();
+	var stream = decompressUnzip();
 	var contents = file.contents;
 
 	file.extract = true;
@@ -141,27 +141,27 @@ test('skip decompressing a non-ZIP file', function (t) {
 test('skip decompressing an empty file', function (t) {
 	t.plan(1);
 
-	var stream = zip();
+	var stream = decompressUnzip();
 
 	stream.on('data', function (file) {
 		t.assert(file.isNull());
 	});
 
-	stream.end(new File());
+	stream.end(new Vinyl());
 });
 
 test('emit an error when a ZIP file is corrupt', function (t) {
 	t.plan(2);
 
 	var file = vinylFile.readSync(path.join(__dirname, 'fixtures/test.zip'));
-	var stream = zip();
+	var stream = decompressUnzip();
 
 	file.contents[98] = 0;
 	file.extract = true;
 
 	stream.on('error', function (err) {
-		t.assert(err);
-		t.assert(err.message === 'invalid literal/lengths set');
+		t.assert(err, err);
+		t.assert(err.message === 'invalid literal/lengths set', err.message);
 	});
 
 	stream.end(file);

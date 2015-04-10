@@ -2,55 +2,54 @@
 
 > zip decompress plugin
 
+
 ## Install
 
-```sh
+```
 $ npm install --save decompress-unzip
 ```
+
 
 ## Usage
 
 ```js
 var Decompress = require('decompress');
-var zip = require('decompress-unzip');
+var decompressUnzip = require('decompress-unzip');
 
-var decompress = new Decompress()
+new Decompress()
 	.src('foo.zip')
 	.dest('dest')
-	.use(zip({strip: 1}));
-
-decompress.run(function (err, files) {
-	if (err) {
-		throw err;
-	}
-
-	console.log('Files extracted successfully!'); 
-});
+	.use(decompressUnzip({strip: 1}))
+	.run();
 ```
 
 You can also use this plugin with [gulp](http://gulpjs.com):
 
 ```js
+var decompressUnzip = require('decompress-unzip');
 var gulp = require('gulp');
-var zip = require('decompress-unzip');
 var vinylAssign = require('vinyl-assign');
 
 gulp.task('default', function () {
 	return gulp.src('foo.zip')
 		.pipe(vinylAssign({extract: true}))
-		.pipe(zip({strip: 1}))
+		.pipe(decompressUnzip({strip: 1}))
 		.pipe(gulp.dest('dest'));
 });
 ```
 
-## Options
 
-### strip
+## API
 
-Type: `Number`  
+### decompressUnzip(options)
+
+#### options.strip
+
+Type: `number`  
 Default: `0`
 
-Equivalent to `--strip-components` for tar.
+Remove leading directory components from extracted files.
+
 
 ## License
 

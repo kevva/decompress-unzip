@@ -1,12 +1,12 @@
 'use strict';
 
-var File = require('vinyl');
 var fs = require('fs');
 var isZip = require('is-zip');
-var Mode = require('stat-mode');
+var StatMode = require('stat-mode');
 var readAllStream = require('read-all-stream');
 var stripDirs = require('strip-dirs');
 var through = require('through2');
+var Vinyl = require('vinyl');
 var yauzl = require('yauzl');
 
 module.exports = function (opts) {
@@ -62,10 +62,10 @@ module.exports = function (opts) {
 
 				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
 					if (!mode) {
-						new Mode(stat).isDirectory(true);
+						new StatMode(stat).isDirectory(true);
 					}
 
-					self.push(new File({
+					self.push(new Vinyl({
 						path: filePath,
 						stat: stat
 					}));
@@ -90,10 +90,10 @@ module.exports = function (opts) {
 						}
 
 						if (!mode) {
-							new Mode(stat).isFile(true);
+							new StatMode(stat).isFile(true);
 						}
 
-						self.push(new File({
+						self.push(new Vinyl({
 							contents: data,
 							path: filePath,
 							stat: stat
