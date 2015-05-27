@@ -1,110 +1,53 @@
 'use strict';
 
-var fs = require('fs');
+var concatStream = require('concat-stream');
+var ifStream = require('if-stream');
 var isZip = require('is-zip');
-var StatMode = require('stat-mode');
-var readAllStream = require('read-all-stream');
 var stripDirs = require('strip-dirs');
-var through = require('through2');
-var Vinyl = require('vinyl');
 var yauzl = require('yauzl');
 
 module.exports = function (opts) {
 	opts = opts || {};
-	opts.strip = +opts.strip || 0;
+	opts.strip = typeof opts.strip === 'number' ? opts.strip : 0;
 
-	return through.obj(function (file, enc, cb) {
-		var self = this;
+	var concat = concatStream(unzip);
+	var ret = ifStream(isZip, concat);
 
-		if (file.isNull()) {
-			cb(null, file);
+	function finish(entry, err, stream) {
+		if (err) {
+			ret.emit('error', err);
 			return;
 		}
 
-		if (file.isStream()) {
-			cb(new Error('Streaming is not supported'));
-			return;
-		}
+		stream.on('error', ret.emit.bind(ret, 'error'));
+		ret.emit('entry', entry, stream);
+	}
 
-		if (!file.extract || !isZip(file.contents)) {
-			cb(null, file);
-			return;
-		}
-
-		yauzl.fromBuffer(file.contents, function (err, zipFile) {
-			var count = 0;
-
+	function unzip(buf) {
+		yauzl.fromBuffer(buf, function (err, zip) {
 			if (err) {
-				cb(err);
+				ret.emit('error', err);
 				return;
 			}
 
-			zipFile.on('error', cb);
-			zipFile.on('entry', function (entry) {
-				var filePath = stripDirs(entry.fileName, opts.strip);
+			zip.on('error', ret.emit.bind(ret, 'error'));
+			zip.on('entry', function (entry) {
+				var name = entry.fileName;
+				var path = stripDirs(name, opts.strip);
 
-				if (filePath === '.') {
-					if (++count === zipFile.entryCount) {
-						cb();
-					}
-
+				if (path === '.') {
 					return;
 				}
 
-				var stat = new fs.Stats();
-				var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
-
-				stat.mode = mode;
-
-				if (entry.getLastModDate()) {
-					stat.mtime = entry.getLastModDate();
-				}
-
-				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
-					if (!mode) {
-						new StatMode(stat).isDirectory(true);
-					}
-
-					self.push(new Vinyl({
-						path: filePath,
-						stat: stat
-					}));
-
-					if (++count === zipFile.entryCount) {
-						cb();
-					}
-
+				if (name.charAt(name.length - 1) === '/') {
 					return;
 				}
 
-				zipFile.openReadStream(entry, function (err, readStream) {
-					if (err) {
-						cb(err);
-						return;
-					}
-
-					readAllStream(readStream, null, function (err, data) {
-						if (err) {
-							cb(err);
-							return;
-						}
-
-						if (!mode) {
-							new StatMode(stat).isFile(true);
-						}
-
-						self.push(new Vinyl({
-							contents: data,
-							path: filePath,
-							stat: stat
-						}));
-
-						if (++count === zipFile.entryCount) {
-							cb();
-						}
-					});
-				});
+				entry.fileName = path;
+				zip.openReadStream(entry, finish.bind(null, entry));
 			});
 		});
-	});
+	}
+
+	return ret;
 };

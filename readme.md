@@ -13,29 +13,16 @@ $ npm install --save decompress-unzip
 ## Usage
 
 ```js
-var Decompress = require('decompress');
+var fs = require('fs');
 var decompressUnzip = require('decompress-unzip');
+var extract = decompressUnzip();
 
-new Decompress()
-	.src('foo.zip')
-	.dest('dest')
-	.use(decompressUnzip({strip: 1}))
-	.run();
-```
-
-You can also use this plugin with [gulp](http://gulpjs.com):
-
-```js
-var decompressUnzip = require('decompress-unzip');
-var gulp = require('gulp');
-var vinylAssign = require('vinyl-assign');
-
-gulp.task('default', function () {
-	return gulp.src('foo.zip')
-		.pipe(vinylAssign({extract: true}))
-		.pipe(decompressUnzip({strip: 1}))
-		.pipe(gulp.dest('dest'));
+extract.on('entry', function (header, stream, cb) {
+	stream.on('end', cb);
+	stream.resume();
 });
+
+fs.createReadStream('unicorn.zip').pipe(extract);
 ```
 
 
