@@ -31,15 +31,15 @@
     "stat-mode": "^0.2.0",
     "strip-dirs": "^1.0.0",
     "through2": "^2.0.0",
-    "vinyl": "^0.5.0",
+    "vinyl": "^1.0.0",
     "yauzl": "^2.2.1"
   },
   "devDependencies": {
     "ava": "^0.2.0",
     "buffer-equal": "^0.0.1",
-    "got": "^3.3.0",
+    "got": "^4.2.0",
     "is-jpg": "^1.0.0",
-    "vinyl-file": "^1.1.0"
+    "vinyl-file": "^1.1.0",
     "xo": "*"
   }
 }
