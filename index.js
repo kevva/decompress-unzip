@@ -11,7 +11,7 @@ var yauzl = require('yauzl');
 
 module.exports = function (opts) {
 	opts = opts || {};
-	opts.strip = +opts.strip || 0;
+	opts.strip = Number(opts.strip) || 0;
 
 	return through.obj(function (file, enc, cb) {
 		var self = this;
