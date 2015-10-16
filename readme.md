@@ -1,4 +1,4 @@
-# decompress-unzip [![Build Status](http://img.shields.io/travis/kevva/decompress-unzip.svg?style=flat)](https://travis-ci.org/kevva/decompress-unzip)
+# decompress-unzip [![Build Status](https://travis-ci.org/kevva/decompress-unzip.svg?branch=master)](https://travis-ci.org/kevva/decompress-unzip)
 
 > zip decompress plugin
 
@@ -13,8 +13,8 @@ $ npm install --save decompress-unzip
 ## Usage
 
 ```js
-var Decompress = require('decompress');
-var decompressUnzip = require('decompress-unzip');
+const Decompress = require('decompress');
+const decompressUnzip = require('decompress-unzip');
 
 new Decompress()
 	.src('foo.zip')
@@ -26,11 +26,11 @@ new Decompress()
 You can also use this plugin with [gulp](http://gulpjs.com):
 
 ```js
-var decompressUnzip = require('decompress-unzip');
-var gulp = require('gulp');
-var vinylAssign = require('vinyl-assign');
+const decompressUnzip = require('decompress-unzip');
+const gulp = require('gulp');
+const vinylAssign = require('vinyl-assign');
 
-gulp.task('default', function () {
+gulp.task('default', () => {
 	return gulp.src('foo.zip')
 		.pipe(vinylAssign({extract: true}))
 		.pipe(decompressUnzip({strip: 1}))
