@@ -24,6 +24,7 @@ const getType = (entry, mode) => {
 const extractEntry = (entry, zip) => {
 	const file = {
 		mode: (entry.externalFileAttributes >> 16) & 0xFFFF,
+		mtime: entry.getLastModDate(),
 		path: entry.fileName
 	};
 
