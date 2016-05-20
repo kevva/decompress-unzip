@@ -75,7 +75,7 @@ const extractFile = zip => new Promise((resolve, reject) => {
 
 module.exports = () => buf => {
 	if (!Buffer.isBuffer(buf)) {
-		return Promise.reject(new TypeError('Expected a buffer'));
+		return Promise.reject(new TypeError(`Expected a Buffer, got ${typeof buf}`));
 	}
 
 	if (!fileType(buf) || fileType(buf).ext !== 'zip') {
