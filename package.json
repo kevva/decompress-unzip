@@ -25,8 +25,8 @@
     "zip"
   ],
   "dependencies": {
+    "file-type": "^3.8.0",
     "get-stream": "^2.2.0",
-    "is-zip": "^1.0.0",
     "pify": "^2.3.0",
     "yauzl": "^2.4.2"
   },

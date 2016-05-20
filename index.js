@@ -1,6 +1,6 @@
 'use strict';
+const fileType = require('file-type');
 const getStream = require('get-stream');
-const isZip = require('is-zip');
 const pify = require('pify');
 const yauzl = require('yauzl');
 
@@ -78,7 +78,7 @@ module.exports = () => buf => {
 		return Promise.reject(new TypeError('Expected a buffer'));
 	}
 
-	if (!isZip(buf)) {
+	if (!fileType(buf) || fileType(buf).ext !== 'zip') {
 		return Promise.resolve([]);
 	}
 
