@@ -1,110 +1,86 @@
 'use strict';
+const getStream = require('get-stream');
+const isZip = require('is-zip');
+const pify = require('pify');
+const yauzl = require('yauzl');
 
-var fs = require('fs');
-var isZip = require('is-zip');
-var StatMode = require('stat-mode');
-var readAllStream = require('read-all-stream');
-var stripDirs = require('strip-dirs');
-var through = require('through2');
-var Vinyl = require('vinyl');
-var yauzl = require('yauzl');
+const getType = (entry, mode) => {
+	const IFMT = 61440;
+	const IFDIR = 16384;
+	const IFLNK = 40960;
+	const madeBy = entry.versionMadeBy >> 8;
 
-module.exports = function (opts) {
-	opts = opts || {};
-	opts.strip = Number(opts.strip) || 0;
+	if ((mode & IFMT) === IFLNK) {
+		return 'symlink';
+	}
 
-	return through.obj(function (file, enc, cb) {
-		var self = this;
+	if ((mode & IFMT) === IFDIR || (madeBy === 0 && entry.externalFileAttributes === 16)) {
+		return 'directory';
+	}
 
-		if (file.isNull()) {
-			cb(null, file);
-			return;
-		}
+	return 'file';
+};
 
-		if (file.isStream()) {
-			cb(new Error('Streaming is not supported'));
-			return;
-		}
+const extractEntry = (entry, zip) => {
+	const file = {
+		mode: (entry.externalFileAttributes >> 16) & 0xFFFF,
+		mtime: entry.getLastModDate(),
+		path: entry.fileName
+	};
 
-		if (!file.extract || !isZip(file.contents)) {
-			cb(null, file);
-			return;
-		}
+	file.type = getType(entry, file.mode);
 
-		yauzl.fromBuffer(file.contents, function (err, zipFile) {
-			var count = 0;
+	if (file.mode === 0 && file.type === 'directory') {
+		file.mode = 493;
+	}
 
-			if (err) {
-				cb(err);
-				return;
+	if (file.mode === 0) {
+		file.mode = 420;
+	}
+
+	return pify(zip.openReadStream.bind(zip))(entry)
+		.then(getStream.buffer)
+		.then(buf => {
+			file.data = buf;
+
+			if (file.type === 'symlink') {
+				file.linkname = buf.toString();
 			}
 
-			zipFile.on('error', cb);
-			zipFile.on('entry', function (entry) {
-				var filePath = stripDirs(entry.fileName, opts.strip);
-
-				if (filePath === '.') {
-					if (++count === zipFile.entryCount) {
-						cb();
-					}
-
-					return;
-				}
-
-				var stat = new fs.Stats();
-				var mode = (entry.externalFileAttributes >> 16) & 0xFFFF;
-
-				stat.mode = mode;
-
-				if (entry.getLastModDate()) {
-					stat.mtime = entry.getLastModDate();
-				}
-
-				if (entry.fileName.charAt(entry.fileName.length - 1) === '/') {
-					if (!mode) {
-						new StatMode(stat).isDirectory(true);
-					}
-
-					self.push(new Vinyl({
-						path: filePath,
-						stat: stat
-					}));
-
-					if (++count === zipFile.entryCount) {
-						cb();
-					}
-
-					return;
-				}
-
-				zipFile.openReadStream(entry, function (err, readStream) {
-					if (err) {
-						cb(err);
-						return;
-					}
-
-					readAllStream(readStream, null, function (err, data) {
-						if (err) {
-							cb(err);
-							return;
-						}
-
-						if (!mode) {
-							new StatMode(stat).isFile(true);
-						}
-
-						self.push(new Vinyl({
-							contents: data,
-							path: filePath,
-							stat: stat
-						}));
-
-						if (++count === zipFile.entryCount) {
-							cb();
-						}
-					});
-				});
-			});
+			return file;
+		})
+		.catch(err => {
+			zip.close();
+			throw err;
 		});
+};
+
+const extractFile = zip => new Promise((resolve, reject) => {
+	const files = [];
+
+	zip.readEntry();
+
+	zip.on('entry', entry => {
+		extractEntry(entry, zip)
+			.catch(reject)
+			.then(file => {
+				files.push(file);
+				zip.readEntry();
+			});
 	});
+
+	zip.on('error', reject);
+	zip.on('end', () => resolve(files));
+});
+
+module.exports = () => buf => {
+	if (!Buffer.isBuffer(buf)) {
+		return Promise.reject(new TypeError('Expected a buffer'));
+	}
+
+	if (!isZip(buf)) {
+		return Promise.resolve([]);
+	}
+
+	return pify(yauzl.fromBuffer)(buf, {lazyEntries: true}).then(extractFile);
 };

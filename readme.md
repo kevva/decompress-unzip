@@ -13,42 +13,28 @@ $ npm install --save decompress-unzip
 ## Usage
 
 ```js
-const Decompress = require('decompress');
+const decompress = require('decompress');
 const decompressUnzip = require('decompress-unzip');
 
-new Decompress()
-	.src('foo.zip')
-	.dest('dest')
-	.use(decompressUnzip({strip: 1}))
-	.run();
-```
-
-You can also use this plugin with [gulp](http://gulpjs.com):
-
-```js
-const decompressUnzip = require('decompress-unzip');
-const gulp = require('gulp');
-const vinylAssign = require('vinyl-assign');
-
-gulp.task('default', () => {
-	return gulp.src('foo.zip')
-		.pipe(vinylAssign({extract: true}))
-		.pipe(decompressUnzip({strip: 1}))
-		.pipe(gulp.dest('dest'));
+decompress('unicorn.zip', 'dist', {
+	plugins: [
+		decompressUnzip()
+	]
+}).then(() => {
+	console.log('Files decompressed');
 });
 ```
 
 
 ## API
 
-### decompressUnzip(options)
+### decompressUnzip()(buf)
 
-#### options.strip
+#### buf
 
-Type: `number`  
-Default: `0`
+Type: `Buffer`
 
-Remove leading directory components from extracted files.
+Buffer to decompress.
 
 
 ## License
