@@ -10,7 +10,7 @@
     "url": "https://github.com/kevva"
   },
   "engines": {
-    "node": ">=0.10.0"
+    "node": ">=4"
   },
   "scripts": {
     "test": "xo && ava"
@@ -22,24 +22,20 @@
     "decompress",
     "decompressplugin",
     "extract",
-    "gulpplugin",
     "zip"
   ],
   "dependencies": {
+    "get-stream": "^2.2.0",
     "is-zip": "^1.0.0",
-    "read-all-stream": "^3.0.0",
-    "stat-mode": "^0.2.0",
-    "strip-dirs": "^1.0.0",
-    "through2": "^2.0.0",
-    "vinyl": "^1.0.0",
-    "yauzl": "^2.2.1"
+    "pify": "^2.3.0",
+    "yauzl": "^2.4.2"
   },
   "devDependencies": {
-    "ava": "^0.2.0",
-    "buffer-equal": "^0.0.1",
-    "got": "^4.2.0",
+    "ava": "*",
     "is-jpg": "^1.0.0",
-    "vinyl-file": "^1.1.0",
     "xo": "*"
+  },
+  "xo": {
+    "esnext": true
   }
 }
