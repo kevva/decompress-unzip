@@ -42,3 +42,7 @@ test('ignore non-valid files', async t => {
 
 	t.deepEqual(buf, data);
 });
+
+test('throw on wrong input', async t => {
+	t.throws(m()('foo'), /Expected a buffer/);
+});

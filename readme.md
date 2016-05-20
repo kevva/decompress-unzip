@@ -32,7 +32,7 @@ decompress('unicorn.zip', 'dist', {
 
 #### buf
 
-Type: `buffer`
+Type: `Buffer`
 
 Buffer to decompress.
 
