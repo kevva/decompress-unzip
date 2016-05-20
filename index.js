@@ -79,7 +79,7 @@ module.exports = () => buf => {
 	}
 
 	if (!isZip(buf)) {
-		return Promise.resolve(buf);
+		return Promise.resolve([]);
 	}
 
 	return pify(yauzl.fromBuffer)(buf, {lazyEntries: true}).then(extractFile);

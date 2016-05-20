@@ -36,11 +36,11 @@ test('extract symlinks', async t => {
 	t.is(files[0].linkname, 'Versions/Current/ReactiveCocoa');
 });
 
-test('ignore non-valid files', async t => {
+test('return empty array if non-valid file is supplied', async t => {
 	const buf = await fsP.readFile(__filename);
-	const data = await m()(buf);
+	const files = await m()(buf);
 
-	t.deepEqual(buf, data);
+	t.is(files.length, 0);
 });
 
 test('throw on wrong input', async t => {
