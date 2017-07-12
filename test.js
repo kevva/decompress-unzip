@@ -44,5 +44,5 @@ test('return empty array if non-valid file is supplied', async t => {
 });
 
 test('throw on wrong input', async t => {
-	t.throws(m()('foo'), 'Expected a Buffer, got string');
+	await t.throws(m()('foo'), 'Expected a Buffer, got string');
 });
