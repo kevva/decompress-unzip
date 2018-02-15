@@ -36,6 +36,13 @@ Type: `Buffer`
 
 Buffer to decompress.
 
+### decompressUnzip()(stream)
+
+#### stream
+
+Type: `Stream`
+
+Stream to decompress. Checks the magic number first, and then buffers the stream.
 
 ## License
 

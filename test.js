@@ -15,6 +15,14 @@ test('extract file', async t => {
 	t.true(isJpg(files[0].data));
 });
 
+test('extract file from stream input', async t => {
+	const stream = fs.createReadStream(path.join(__dirname, 'fixtures', 'file.zip'));
+	const files = await m()(stream);
+
+	t.is(files[0].path, 'test.jpg');
+	t.true(isJpg(files[0].data));
+});
+
 test('extract multiple files', async t => {
 	const buf = await fsP.readFile(path.join(__dirname, 'fixtures', 'multiple.zip'));
 	const files = await m()(buf);
@@ -43,6 +51,13 @@ test('return empty array if non-valid file is supplied', async t => {
 	t.is(files.length, 0);
 });
 
+test('return empty array if non-valid file stream is supplied', async t => {
+	const stream = fs.createReadStream(__filename);
+	const files = await m()(stream);
+
+	t.is(files.length, 0);
+});
+
 test('throw on wrong input', async t => {
-	await t.throws(m()('foo'), 'Expected a Buffer, got string');
+	await t.throws(m()('foo'), 'Expected a Buffer or Stream, got string');
 });

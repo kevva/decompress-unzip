@@ -1,6 +1,8 @@
 'use strict';
+const FirstChunkStream = require('first-chunk-stream');
 const fileType = require('file-type');
 const getStream = require('get-stream');
+const isStream = require('is-stream');
 const pify = require('pify');
 const yauzl = require('yauzl');
 
@@ -73,14 +75,29 @@ const extractFile = zip => new Promise((resolve, reject) => {
 	zip.on('end', () => resolve(files));
 });
 
-module.exports = () => buf => {
-	if (!Buffer.isBuffer(buf)) {
-		return Promise.reject(new TypeError(`Expected a Buffer, got ${typeof buf}`));
+module.exports = () => input => {
+	const processZip = buf => pify(yauzl.fromBuffer)(buf, {lazyEntries: true}).then(extractFile);
+
+	if (Buffer.isBuffer(input)) {
+		const type = fileType(input);
+
+		return type && type.ext === 'zip' ? processZip(input) : Promise.resolve([]);
+	} else if (isStream(input)) {
+		const notAZipError = new Error('not-a-zip');
+		const firstChunkIsZip = new FirstChunkStream({chunkLength: 4}, (err, chunk, enc, cb) => {
+			const type = chunk && fileType(chunk);
+
+			cb(type && type.ext === 'zip' ? err : err || notAZipError, chunk);
+		});
+
+		return getStream.buffer(input.pipe(firstChunkIsZip)).then(processZip, error => {
+			if (error === notAZipError) {
+				return [];
+			}
+
+			throw error;
+		});
 	}
 
-	if (!fileType(buf) || fileType(buf).ext !== 'zip') {
-		return Promise.resolve([]);
-	}
-
-	return pify(yauzl.fromBuffer)(buf, {lazyEntries: true}).then(extractFile);
+	return Promise.reject(new TypeError(`Expected a Buffer or Stream, got ${typeof input}`));
 };
