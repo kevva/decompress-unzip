@@ -82,7 +82,9 @@ module.exports = () => input => {
 		const type = fileType(input);
 
 		return type && type.ext === 'zip' ? processZip(input) : Promise.resolve([]);
-	} else if (isStream(input)) {
+	}
+
+	if (isStream(input)) {
 		const notAZipError = new Error('not-a-zip');
 		const firstChunkIsZip = new FirstChunkStream({chunkLength: 4}, (err, chunk, enc, cb) => {
 			const type = chunk && fileType(chunk);
