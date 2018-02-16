@@ -90,12 +90,12 @@ module.exports = () => input => {
 			cb(type && type.ext === 'zip' ? err : err || notAZipError, chunk);
 		});
 
-		return getStream.buffer(input.pipe(firstChunkIsZip)).then(processZip, error => {
-			if (error === notAZipError) {
+		return getStream.buffer(input.pipe(firstChunkIsZip)).then(processZip, err => {
+			if (err === notAZipError) {
 				return [];
 			}
 
-			throw error;
+			throw err;
 		});
 	}
 
