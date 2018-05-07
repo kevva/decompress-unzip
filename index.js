@@ -25,7 +25,7 @@ const extractEntry = (entry, zip) => {
 	const file = {
 		mode: (entry.externalFileAttributes >> 16) & 0xFFFF,
 		mtime: entry.getLastModDate(),
-		path: entry.fileName
+		path: entry.fileName.toString()
 	};
 
 	file.type = getType(entry, file.mode);
@@ -73,7 +73,7 @@ const extractFile = zip => new Promise((resolve, reject) => {
 	zip.on('end', () => resolve(files));
 });
 
-module.exports = () => buf => {
+module.exports = opt => buf => {
 	if (!Buffer.isBuffer(buf)) {
 		return Promise.reject(new TypeError(`Expected a Buffer, got ${typeof buf}`));
 	}
@@ -82,5 +82,5 @@ module.exports = () => buf => {
 		return Promise.resolve([]);
 	}
 
-	return pify(yauzl.fromBuffer)(buf, {lazyEntries: true}).then(extractFile);
+	return pify(yauzl.fromBuffer)(buf, Object.assign({lazyEntries: true}, opt)).then(extractFile);
 };

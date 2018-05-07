@@ -3,7 +3,7 @@ import path from 'path';
 import isJpg from 'is-jpg';
 import pify from 'pify';
 import test from 'ava';
-import m from './';
+import m from '.';
 
 const fsP = pify(fs);
 
@@ -45,4 +45,12 @@ test('return empty array if non-valid file is supplied', async t => {
 
 test('throw on wrong input', async t => {
 	await t.throws(m()('foo'), 'Expected a Buffer, got string');
+});
+
+test('chinese zipfile', async t => {
+	const buf = await fsP.readFile(path.join(__dirname, 'fixtures', '中文测试.zip'));
+	const files = await m({decodeStrings: false})(buf);
+
+	t.is(files[0].path, '中文测试.md');
+	t.is(files[0].type, 'file');
 });
