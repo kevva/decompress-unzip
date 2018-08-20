@@ -14,7 +14,7 @@ const getType = (entry, mode) => {
 		return 'symlink';
 	}
 
-	if ((mode & IFMT) === IFDIR || (madeBy === 0 && entry.externalFileAttributes === 16)) {
+	if ((mode & IFMT) === IFDIR || (madeBy === 0 && entry.externalFileAttributes === 16) || /\/$/.test(entry.fileName)) {
 		return 'directory';
 	}
 
