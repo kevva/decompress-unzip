@@ -73,7 +73,7 @@ const extractFile = zip => new Promise((resolve, reject) => {
 	zip.on('end', () => resolve(files));
 });
 
-module.exports = () => buf => {
+module.exports = opts => buf => {
 	if (!Buffer.isBuffer(buf)) {
 		return Promise.reject(new TypeError(`Expected a Buffer, got ${typeof buf}`));
 	}
@@ -82,5 +82,7 @@ module.exports = () => buf => {
 		return Promise.resolve([]);
 	}
 
-	return pify(yauzl.fromBuffer)(buf, {lazyEntries: true}).then(extractFile);
+	opts = Object.assign({lazyEntries: true}, opts || {});
+
+	return pify(yauzl.fromBuffer)(buf, opts).then(extractFile);
 };
