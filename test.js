@@ -21,6 +21,7 @@ test('extract file from stream input', async t => {
 
 	t.is(files[0].path, 'test.jpg');
 	t.true(isJpg(files[0].data));
+	t.true(stream._readableState.ended);
 });
 
 test('extract multiple files', async t => {
@@ -56,6 +57,8 @@ test('return empty array if non-valid file stream is supplied', async t => {
 	const files = await m()(stream);
 
 	t.is(files.length, 0);
+	t.false(stream._readableState.ended);
+	t.false(stream._readableState.flowing);
 });
 
 test('throw on wrong input', async t => {
